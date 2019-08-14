@@ -48,10 +48,14 @@ export class TypeScriptAssetCode extends AssetCode {
     }
 
     // Run the TypeScript compiler in our own module path, so that our own dependency is used
-    const tscChild = child_process.spawnSync('npx', ['tsc', '--project', this.typeScriptSourcePath, '--outDir', this.path], {
-      cwd: __dirname,
-      stdio: 'inherit',
-    })
+    const tscChild = child_process.spawnSync(
+      'npx',
+      ['tsc', '--project', this.typeScriptSourcePath, '--outDir', this.path],
+      {
+        cwd: __dirname,
+        stdio: 'inherit',
+      }
+    )
     if (tscChild.error) {
       throw tscChild.error
     }
@@ -71,23 +75,51 @@ export class TypeScriptAssetCode extends AssetCode {
     // Run NPM package install so that the Lambda function gets all dependencies - unless we've already run it
 
     // New versions in source path
-    const newPackageLockData = readFileSyncOrNull(pathModule.join(this.typeScriptSourcePath, 'package-lock.json'), 'utf8')
-    const newPackageData = readFileSyncOrNull(pathModule.join(this.typeScriptSourcePath, 'package.json'), 'utf8')
+    const newPackageLockData = readFileSyncOrNull(
+      pathModule.join(this.typeScriptSourcePath, 'package-lock.json'),
+      'utf8'
+    )
+    const newPackageData = readFileSyncOrNull(
+      pathModule.join(this.typeScriptSourcePath, 'package.json'),
+      'utf8'
+    )
 
     // Old versions in deploy path (if any)
-    const oldPackageLockData = readFileSyncOrNull(pathModule.join(this.path, 'package-lock.json'), 'utf8')
-    const oldPackageData = readFileSyncOrNull(pathModule.join(this.path, 'package.json'), 'utf8')
+    const oldPackageLockData = readFileSyncOrNull(
+      pathModule.join(this.path, 'package-lock.json'),
+      'utf8'
+    )
+    const oldPackageData = readFileSyncOrNull(
+      pathModule.join(this.path, 'package.json'),
+      'utf8'
+    )
 
-    if (newPackageData && (newPackageData !== oldPackageData || newPackageLockData !== oldPackageLockData)) {
+    if (
+      newPackageData &&
+      (newPackageData !== oldPackageData ||
+        newPackageLockData !== oldPackageLockData)
+    ) {
       // We have a package.json, and either package.json or package-lock.json has changed since last build, or no build done yet
-      fs.writeFileSync(pathModule.join(this.path, 'package-lock.json'), newPackageLockData, 'utf8')
-      fs.writeFileSync(pathModule.join(this.path, 'package.json'), newPackageData, 'utf8')
+      fs.writeFileSync(
+        pathModule.join(this.path, 'package-lock.json'),
+        newPackageLockData,
+        'utf8'
+      )
+      fs.writeFileSync(
+        pathModule.join(this.path, 'package.json'),
+        newPackageData,
+        'utf8'
+      )
 
       // Execute npm install
-      const npmChild = child_process.spawnSync('npm', ['install', '--production'], {
-        cwd: this.path,
-        stdio: 'inherit',
-      })
+      const npmChild = child_process.spawnSync(
+        'npm',
+        ['install', ' --unsafe-perm', '--production'],
+        {
+          cwd: this.path,
+          stdio: 'inherit',
+        }
+      )
       if (npmChild.error) {
         throw npmChild.error
       }
