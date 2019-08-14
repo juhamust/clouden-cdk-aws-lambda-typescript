@@ -114,7 +114,7 @@ export class TypeScriptAssetCode extends AssetCode {
       // Execute npm install
       const npmChild = child_process.spawnSync(
         'npm',
-        ['install', ' --unsafe-perm', '--production'],
+        ['install', '--unsafe-perm', '--production'],
         {
           cwd: this.path,
           stdio: 'inherit',
